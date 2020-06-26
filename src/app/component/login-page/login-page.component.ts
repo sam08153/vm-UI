@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
+import { AuthenticationService } from '../../../app/services';
 
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
@@ -22,12 +23,16 @@ export class LoginPageComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router
-  ) { }
+    private router: Router,
+    private authenticationService: AuthenticationService
+  ) {
+    if (this.authenticationService.userValue) {
+      this.router.navigate(['/welcome']);
+    }
+  }
 
   ngOnInit(): void {
     this.loginFormI();
-    // get return url from route parameters or default to '/'
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
 
@@ -46,8 +51,17 @@ export class LoginPageComponent implements OnInit {
     const email = val.email
     const password = val.password
     this.loading = true;
-    if (this.loginForm.invalid) {
-
+    if (this.loginForm.valid) {
+      this.authenticationService.login(email, password)
+      .pipe(first())
+      .subscribe(
+          data => {
+              this.router.navigate(["/welcome"]);
+          },
+          error => {
+              this.error = error;
+              this.loading = false;
+          });
     }
     this.loading = false;
   }

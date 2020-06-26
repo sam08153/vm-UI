@@ -7,6 +7,9 @@ import { LoginPageComponent } from './component/login-page/login-page.component'
 import { HomePageComponent } from './component/home-page/home-page.component';
 import { ReactiveFormsModule } from '@angular/forms';
 
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { fakeBackendProvider,BasicAuthInterceptor, ErrorInterceptor } from './utilities';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -16,9 +19,15 @@ import { ReactiveFormsModule } from '@angular/forms';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    HttpClientModule
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: BasicAuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+
+    fakeBackendProvider
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
